@@ -31,13 +31,26 @@
 <body class="flex items-center justify-center min-h-screen p-4">
 
     <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-lg space-y-6 transform transition-transform duration-300 hover:scale-105">
+        <!-- மொழி தேர்வு பொத்தான் -->
+        <div class="flex justify-end mb-4">
+            <button id="lang-toggle-btn" class="flex items-center space-x-2 text-gray-600 hover:text-teal-600 transition-colors">
+                <!-- உலக ஐகான் -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20zM2 12h20"></path>
+                    <path d="M12 2a14.5 14.5 0 0 0-10 20"></path>
+                </svg>
+                <span id="lang-text">English</span>
+            </button>
+        </div>
+
         <!-- தனித்துவமான உணவு ஐகான் (Unique Food Icon) -->
         <div class="flex justify-center mb-4">
             <span class="text-7xl transform transition-transform duration-300 hover:rotate-12" role="img" aria-label="Cook emoji">👩‍🍳</span>
         </div>
 
         <!-- தலைப்பு (Heading) -->
-        <h1 class="text-4xl font-extrabold text-center text-teal-600 tracking-wide">உணவு செய்முறைகள்</h1>
+        <h1 id="app-title" class="text-4xl font-extrabold text-center text-teal-600 tracking-wide">உணவு செய்முறைகள்</h1>
 
         <!-- தேடல் பகுதி (Search Section) -->
         <div id="search-section" class="flex flex-col space-y-4">
@@ -67,15 +80,71 @@
 
     <script>
         // DOM கூறுகளைப் பெறுதல் (Get DOM elements)
+        const langToggleBtn = document.getElementById('lang-toggle-btn');
+        const langText = document.getElementById('lang-text');
+        const appTitle = document.getElementById('app-title');
         const recipeInput = document.getElementById('recipe-input');
         const getRecipeBtn = document.getElementById('get-recipe-btn');
         const searchSection = document.getElementById('search-section');
         const recipeResults = document.getElementById('recipe-results');
         const messageArea = document.getElementById('message-area');
         const backToHomeBtn = document.getElementById('back-to-home-btn');
+        const htmlElement = document.documentElement;
+
+        // மொழிபெயர்ப்பு தரவு (Translation data)
+        const translations = {
+            'ta': {
+                appTitle: 'உணவு செய்முறைகள்',
+                inputPlaceholder: 'உணவின் பெயரை உள்ளிடவும்...',
+                searchButton: 'செய்முறையைப் பெறுங்கள்',
+                backButton: 'முகப்புப் பக்கத்திற்குச் செல்ல',
+                loading: 'செய்முறை தேடப்படுகிறது...',
+                emptyInput: 'தயவுசெய்து ஒரு உணவின் பெயரை உள்ளிடவும்.',
+                apiError: 'இணைப்பு அல்லது தரவுப் பிழை: ',
+                notFound: 'செய்முறை எதுவும் கிடைக்கவில்லை. மீண்டும் முயற்சிக்கவும்.',
+                unexpectedResponse: 'API-யிலிருந்து எதிர்பாராத பதில் கிடைத்தது.',
+                ingredientsHeading: 'தேவையான பொருட்கள்',
+                preparationHeading: 'தயாரிப்பு முறை (படிநிலைகள்)',
+                youtubeButton: 'YouTube-இல் காணொளி செய்முறையைப் பார்க்கவும்',
+                langToggle: 'English'
+            },
+            'en': {
+                appTitle: 'Food Recipes',
+                inputPlaceholder: 'Enter a food name...',
+                searchButton: 'Get Recipe',
+                backButton: 'Go to Home',
+                loading: 'Searching for recipe...',
+                emptyInput: 'Please enter a food name.',
+                apiError: 'Connection or data error: ',
+                notFound: 'No recipe found. Please try again.',
+                unexpectedResponse: 'Received unexpected response from API.',
+                ingredientsHeading: 'Ingredients',
+                preparationHeading: 'Preparation Steps',
+                youtubeButton: 'Watch video recipe on YouTube',
+                langToggle: 'தமிழ்'
+            }
+        };
 
         // ஜெமினி API விசை (Gemini API Key)
-        const apiKey = "AIzaSyC6EwYDsj7MFCe8dMur_JbIKSJxc-17Wmw";
+        const apiKey = "";
+
+        let currentLang = 'ta';
+
+        // UI-ஐ தற்போதைய மொழிக்கு புதுப்பித்தல் (Update the UI to the current language)
+        const updateUI = (lang) => {
+            appTitle.textContent = translations[lang].appTitle;
+            recipeInput.placeholder = translations[lang].inputPlaceholder;
+            getRecipeBtn.textContent = translations[lang].searchButton;
+            backToHomeBtn.textContent = translations[lang].backButton;
+            langText.textContent = translations[lang].langToggle;
+            htmlElement.lang = lang; // Change the HTML lang attribute
+        };
+
+        // மொழி மாற்ற பொத்தான் நிகழ்வு (Language toggle button event)
+        langToggleBtn.addEventListener('click', () => {
+            currentLang = currentLang === 'ta' ? 'en' : 'ta';
+            updateUI(currentLang);
+        });
 
         // செய்முறை தேடல் செயல்பாடு (Recipe Search Function)
         getRecipeBtn.addEventListener('click', async () => {
@@ -87,7 +156,7 @@
             backToHomeBtn.classList.add('hidden');
 
             if (searchTerm === '') {
-                messageArea.textContent = 'தயவுசெய்து ஒரு உணவின் பெயரை உள்ளிடவும்.';
+                messageArea.textContent = translations[currentLang].emptyInput;
                 messageArea.classList.remove('hidden');
                 return;
             }
@@ -116,12 +185,18 @@
                 }
             };
             
+            // மொழிக்கு ஏற்ப API ப்ராம்ப்டை உருவாக்குதல் (Create API prompt based on language)
+            let promptText;
+            if (currentLang === 'ta') {
+                promptText = `கீழே கொடுக்கப்பட்டுள்ள உணவின் செய்முறை, தேவையான பொருட்கள் (எடையுடன் அல்லது அளவுகளுடன்), அதை நேரத்துடன் கூடிய படிப்படியான செயல்முறையாக (step-by-step process with timing) மற்றும் அதற்கான ஒரு பிரபலமான YouTube சேனலில் இருந்து ஒரு தொடர்புடைய YouTube வீடியோ இணைப்பை JSON வடிவத்தில் வழங்கவும்: ${searchTerm}. செய்முறை இருந்தால், "status":"success" மற்றும் "data" object உடன் பதிலளிக்கவும். செய்முறை இல்லையென்றால், "status":"not_found" மற்றும் "message" உடன் பதிலளிக்கவும்.`;
+            } else {
+                promptText = `Provide the recipe for the following food in JSON format, including ingredients (with weights or measurements), a step-by-step preparation process with timing, and a relevant YouTube video link from a popular YouTube channel: ${searchTerm}. If a recipe exists, respond with "status":"success" and the "data" object. If no recipe is found, respond with "status":"not_found" and a "message".`;
+            }
+
             // API-க்கு அனுப்பப்படும் கட்டமைப்பு (Payload for the API)
             const payload = {
                 contents: [{
-                    parts: [{
-                        text: `கீழே கொடுக்கப்பட்டுள்ள உணவின் செய்முறை, தேவையான பொருட்கள் (எடையுடன் அல்லது அளவுகளுடன்), அதை நேரத்துடன் கூடிய படிப்படியான செயல்முறையாக (step-by-step process with timing) மற்றும் அதற்கான ஒரு பிரபலமான YouTube சேனலில் இருந்து ஒரு தொடர்புடைய YouTube வீடியோ இணைப்பை JSON வடிவத்தில் வழங்கவும்: ${searchTerm}. செய்முறை இருந்தால், "status":"success" மற்றும் "data" object உடன் பதிலளிக்கவும். செய்முறை இல்லையென்றால், "status":"not_found" மற்றும் "message" உடன் பதிலளிக்கவும்.`
-                    }]
+                    parts: [{ text: promptText }]
                 }],
                 generationConfig: {
                     responseMimeType: "application/json",
@@ -132,7 +207,7 @@
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             // API அழைப்பின் போது காத்திருக்கும் செய்தி (Show loading message)
-            messageArea.textContent = 'செய்முறை தேடப்படுகிறது...';
+            messageArea.textContent = translations[currentLang].loading;
             messageArea.classList.remove('hidden');
             getRecipeBtn.classList.add('pulse-animation');
             searchSection.classList.add('hidden');
@@ -172,7 +247,7 @@
                     ingredientsSection.className = 'bg-gray-200 p-6 rounded-2xl shadow-sm';
                     const ingredientsHeading = document.createElement('h3');
                     ingredientsHeading.className = 'text-xl font-semibold text-gray-700 mb-2';
-                    ingredientsHeading.textContent = 'தேவையான பொருட்கள்';
+                    ingredientsHeading.textContent = translations[currentLang].ingredientsHeading;
                     
                     const ingredientsList = document.createElement('ul');
                     ingredientsList.className = 'list-disc list-inside space-y-1 text-gray-700';
@@ -190,7 +265,7 @@
                     preparationSection.className = 'bg-gray-200 p-6 rounded-2xl shadow-sm';
                     const preparationHeading = document.createElement('h3');
                     preparationHeading.className = 'text-xl font-semibold text-gray-700 mb-2';
-                    preparationHeading.textContent = 'தயாரிப்பு முறை (படிநிலைகள்)';
+                    preparationHeading.textContent = translations[currentLang].preparationHeading;
 
                     const preparationList = document.createElement('ol');
                     preparationList.className = 'list-decimal list-inside space-y-2 text-gray-700';
@@ -208,7 +283,7 @@
                     youtubeLink.href = data.youtubeLink;
                     youtubeLink.target = '_blank';
                     youtubeLink.className = 'block w-full text-center py-4 px-6 rounded-xl bg-red-600 text-white font-bold shadow-lg hover:bg-red-700 transition-all transform hover:scale-105';
-                    youtubeLink.innerHTML = `<span class="text-2xl mr-2">▶️</span> YouTube-இல் காணொளி செய்முறையைப் பார்க்கவும்`;
+                    youtubeLink.innerHTML = `<span class="text-2xl mr-2">▶️</span> ${translations[currentLang].youtubeButton}`;
 
                     recipeCard.appendChild(title);
                     recipeCard.appendChild(ingredientsSection);
@@ -223,17 +298,17 @@
 
                 } else if (recipeData.status === 'not_found') {
                     // செய்முறை கிடைக்கவில்லை எனச் செய்தி காட்டுதல் (Show 'no recipe found' message)
-                    messageArea.textContent = recipeData.message || 'செய்முறை எதுவும் கிடைக்கவில்லை. மீண்டும் முயற்சிக்கவும்.';
+                    messageArea.textContent = recipeData.message || translations[currentLang].notFound;
                     messageArea.classList.remove('hidden');
                     searchSection.classList.remove('hidden');
                 } else {
                     // எதிர்பாராத API பதில் (Unexpected API response)
-                    throw new Error('API-யிலிருந்து எதிர்பாராத பதில் கிடைத்தது.');
+                    throw new Error(translations[currentLang].unexpectedResponse);
                 }
 
             } catch (error) {
                 console.error("API Error:", error);
-                messageArea.textContent = `இணைப்பு அல்லது தரவுப் பிழை: ${error.message}. மீண்டும் முயற்சிக்கவும்.`;
+                messageArea.textContent = `${translations[currentLang].apiError} ${error.message}.`;
                 messageArea.classList.remove('hidden');
                 searchSection.classList.remove('hidden');
             }
@@ -247,6 +322,9 @@
             recipeInput.value = '';
             messageArea.classList.add('hidden');
         });
+
+        // தொடக்கத்தில் UI-ஐ புதுப்பித்தல் (Update UI on initial load)
+        updateUI(currentLang);
     </script>
 </body>
 </html>
